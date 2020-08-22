@@ -21,7 +21,22 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn configure_discord_webhook() -> Result<()> {}
+fn configure_discord_webhook() -> Result<()> {
+    let mut input = String::new();
+
+    let print_msg = |s| {
+        print!("{}", s);
+        io::stdout().flush().unwrap();
+    };
+
+    print_msg("nickname for channel:");
+    let channle_name = io::stdin().read_line(&mut input)?;
+
+    print_msg("Please input webhook url");
+    let webhook_url = io::stdin().read_line(&mut input)?;
+
+    Ok(())
+}
 
 fn build_app() -> App<'static, 'static> {
     App::new(crate_name!())
