@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 clap = "2.33.1"
 anyhow = "1.0.32"
+toml = "0.5.6"
+serde = { version = "1.0", features = ["derive"] }
