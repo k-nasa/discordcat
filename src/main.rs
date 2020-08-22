@@ -1,16 +1,15 @@
-use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
-
 use anyhow::Result;
+use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
+use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 use std::fs;
+use std::fs::OpenOptions;
 use std::io;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::process::exit;
 
 const CFG_FLAG: &str = "configure";
-
-const CFG_FILE_PATH: &str = "~/.discordcat";
 
 fn main() -> Result<()> {
     let app = build_app();
@@ -18,13 +17,16 @@ fn main() -> Result<()> {
     let matches = app.get_matches();
 
     if matches.is_present(CFG_FLAG) {
-        configure_discord_webhook();
+        configure_discord_webhook()?;
         exit(0)
     }
+
+    println!("{}", get_config_path());
 
     Ok(())
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 struct Setting {
     default_channel: String,
     channels: HashMap<String, String>,
@@ -51,26 +53,39 @@ impl Setting {
             channels,
         }
     }
+
+    fn append_channel(self, k: String, v: String) -> Self {
+        let mut channels = self.channels;
+        channels.insert(k, v);
+
+        Setting {
+            default_channel: self.default_channel,
+            channels,
+        }
+    }
+}
+
+fn get_config_path() -> String {
+    let home = env!("HOME");
+    format!("{}/.discordcat", home)
 }
 
 fn configure_discord_webhook() -> Result<()> {
-    let mut input = String::new();
-
     let print_msg = |s| {
         print!("{}", s);
         io::stdout().flush().unwrap();
     };
 
     print_msg("nickname for channel:");
-    let channle_name = io::stdin().read_line(&mut input)?;
+    let channle_name = read_line()?;
 
-    print_msg("Please input webhook url");
-    let webhook_url = io::stdin().read_line(&mut input)?;
+    print_msg("Please input webhook url:");
+    let webhook_url = read_line()?;
 
-    let config_file_present = fs::File::open(CFG_FILE_PATH).is_ok();
+    let config_file_present = std::path::Path::new(&get_config_path()).exists();
 
     if !config_file_present {
-        let mut f = fs::File::create(CFG_FILE_PATH)?;
+        let mut f = fs::File::create(&get_config_path())?;
 
         let mut channels = HashMap::new();
         channels.insert(channle_name.to_string(), webhook_url.to_string());
@@ -79,15 +94,27 @@ fn configure_discord_webhook() -> Result<()> {
             .default_channel(channle_name.to_string())
             .channels(channels);
 
-        // TODO output setting to toml file
-        todo!()
+        write!(f, "{}", toml::to_string(&setting)?)?;
+    } else {
+        let mut f = OpenOptions::new().write(true).open(&get_config_path())?;
+
+        let mut s = String::new();
+        f.read_to_string(&mut s)?;
+
+        let setting: Setting = toml::from_str(&s)?;
+        let setting = setting.append_channel(channle_name.to_string(), webhook_url.to_string());
+
+        write!(f, "{}", toml::to_string(&setting)?)?;
     }
 
-    // TODO read config toml file
-    // TODO append new channel
-    todo!();
-
     Ok(())
+}
+
+fn read_line() -> Result<String> {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+
+    Ok(input.trim().to_string())
 }
 
 fn build_app() -> App<'static, 'static> {
