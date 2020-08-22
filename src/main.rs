@@ -7,6 +7,7 @@ use std::fs;
 use std::fs::OpenOptions;
 use std::io;
 use std::io::{Read, Write};
+use std::io::{Seek, SeekFrom};
 use std::process::exit;
 
 const CFG_FLAG: &str = "configure";
@@ -95,8 +96,12 @@ fn configure_discord_webhook() -> Result<()> {
             .channels(channels);
 
         write!(f, "{}", toml::to_string(&setting)?)?;
+        f.flush()?;
     } else {
-        let mut f = OpenOptions::new().write(true).open(&get_config_path())?;
+        let mut f = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&get_config_path())?;
 
         let mut s = String::new();
         f.read_to_string(&mut s)?;
@@ -104,7 +109,9 @@ fn configure_discord_webhook() -> Result<()> {
         let setting: Setting = toml::from_str(&s)?;
         let setting = setting.append_channel(channle_name.to_string(), webhook_url.to_string());
 
+        f.seek(SeekFrom::Start(0)).unwrap();
         write!(f, "{}", toml::to_string(&setting)?)?;
+        f.flush()?;
     }
 
     Ok(())
