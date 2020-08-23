@@ -12,6 +12,7 @@ use std::process::exit;
 
 const CFG_FLAG: &str = "configure";
 const USERNAME_FLAG: &str = "username";
+const CHANNEL_FLAG: &str = "channel";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -41,8 +42,14 @@ async fn main() -> Result<()> {
         username: username.to_string(),
     };
 
+    let channel = if matches.is_present(CHANNEL_FLAG) {
+        matches.value_of(CHANNEL_FLAG).unwrap()
+    } else {
+        setting.default_channel()
+    };
+
     let resp = client
-        .post(setting.channels.get(setting.default_channel()).unwrap())
+        .post(setting.channels.get(channel).unwrap())
         .header("Content-Type", "application/json")
         .body(serde_json::to_string(&msg)?)
         .send()
@@ -71,6 +78,12 @@ fn build_app() -> App<'static, 'static> {
         .arg(
             Arg::with_name(USERNAME_FLAG)
                 .long("username")
+                .help("TODO")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(CHANNEL_FLAG)
+                .long("channel")
                 .help("TODO")
                 .takes_value(true),
         )
