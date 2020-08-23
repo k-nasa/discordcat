@@ -22,7 +22,8 @@ fn main() -> Result<()> {
         exit(0)
     }
 
-    println!("{}", get_config_path());
+    let mut buf = String::new();
+    let pipe_arg = std::io::stdin().read_to_string(&mut buf)?;
 
     Ok(())
 }
