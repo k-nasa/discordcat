@@ -27,6 +27,21 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+fn build_app() -> App<'static, 'static> {
+    App::new(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
+        .setting(AppSettings::DeriveDisplayOrder)
+        .setting(AppSettings::ColoredHelp)
+        .arg(
+            Arg::with_name(CFG_FLAG)
+                .long("configure")
+                .short("c")
+                .help("TODO")
+                .takes_value(false),
+        )
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct Setting {
     default_channel: String,
@@ -122,19 +137,4 @@ fn read_line() -> Result<String> {
     io::stdin().read_line(&mut input)?;
 
     Ok(input.trim().to_string())
-}
-
-fn build_app() -> App<'static, 'static> {
-    App::new(crate_name!())
-        .version(crate_version!())
-        .about(crate_description!())
-        .setting(AppSettings::DeriveDisplayOrder)
-        .setting(AppSettings::ColoredHelp)
-        .arg(
-            Arg::with_name(CFG_FLAG)
-                .long("configure")
-                .short("c")
-                .help("TODO")
-                .takes_value(false),
-        )
 }
