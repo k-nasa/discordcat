@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
 
     let client = reqwest::Client::new();
 
-    let username = matches.value_of(USERNAME_FLAG).unwrap();
+    let username = matches.value_of(USERNAME_FLAG).unwrap_or_default();
     let msg = Msg {
         content: pipe_arg,
         username: username.to_string(),
