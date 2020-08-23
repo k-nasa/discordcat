@@ -11,6 +11,7 @@ use std::io::{Seek, SeekFrom};
 use std::process::exit;
 
 const CFG_FLAG: &str = "configure";
+const USERNAME_FLAG: &str = "username";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -34,7 +35,11 @@ async fn main() -> Result<()> {
 
     let client = reqwest::Client::new();
 
-    let msg = Msg { content: pipe_arg };
+    let username = matches.value_of(USERNAME_FLAG).unwrap();
+    let msg = Msg {
+        content: pipe_arg,
+        username: username.to_string(),
+    };
 
     let resp = client
         .post(setting.channels.get(setting.default_channel()).unwrap())
@@ -63,6 +68,12 @@ fn build_app() -> App<'static, 'static> {
                 .help("TODO")
                 .takes_value(false),
         )
+        .arg(
+            Arg::with_name(USERNAME_FLAG)
+                .long("username")
+                .help("TODO")
+                .takes_value(true),
+        )
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -74,6 +85,7 @@ struct Setting {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Msg {
     pub content: String,
+    pub username: String,
 }
 
 impl Setting {
