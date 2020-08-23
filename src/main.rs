@@ -89,10 +89,10 @@ fn configure_discord_webhook() -> Result<()> {
         let mut f = fs::File::create(&get_config_path())?;
 
         let mut channels = HashMap::new();
-        channels.insert(channle_name.to_string(), webhook_url.to_string());
+        channels.insert(channle_name.to_string(), webhook_url);
 
         let setting = Setting::new()
-            .default_channel(channle_name.to_string())
+            .default_channel(channle_name)
             .channels(channels);
 
         write!(f, "{}", toml::to_string(&setting)?)?;
@@ -107,7 +107,7 @@ fn configure_discord_webhook() -> Result<()> {
         f.read_to_string(&mut s)?;
 
         let setting: Setting = toml::from_str(&s)?;
-        let setting = setting.append_channel(channle_name.to_string(), webhook_url.to_string());
+        let setting = setting.append_channel(channle_name, webhook_url);
 
         f.seek(SeekFrom::Start(0)).unwrap();
         write!(f, "{}", toml::to_string(&setting)?)?;
