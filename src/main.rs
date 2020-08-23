@@ -23,8 +23,29 @@ async fn main() -> Result<()> {
         exit(0)
     }
 
-    let mut buf = String::new();
-    let pipe_arg = std::io::stdin().read_to_string(&mut buf)?;
+    let mut pipe_arg = String::new();
+    std::io::stdin().read_to_string(&mut pipe_arg)?;
+
+    if pipe_arg.ends_with("\n") {
+        pipe_arg.remove(pipe_arg.len() - 1);
+    }
+
+    let setting: Setting = Setting::load_setting()?;
+
+    let client = reqwest::Client::new();
+
+    let msg = Msg { content: pipe_arg };
+
+    let resp = client
+        .post(setting.channels.get(setting.default_channel()).unwrap())
+        .header("Content-Type", "application/json")
+        .body(serde_json::to_string(&msg)?)
+        .send()
+        .await?;
+
+    if resp.status() == 204 {
+        println!("\x1b[01;32mSend message \"{}\"\x1b[m", msg.content);
+    }
 
     Ok(())
 }
@@ -50,6 +71,11 @@ struct Setting {
     channels: HashMap<String, String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Msg {
+    pub content: String,
+}
+
 impl Setting {
     fn new() -> Self {
         Setting {
@@ -58,14 +84,18 @@ impl Setting {
         }
     }
 
-    fn default_channel(self, default_channel: String) -> Self {
+    fn default_channel(&self) -> &str {
+        &self.default_channel
+    }
+
+    fn set_default_channel(self, default_channel: String) -> Self {
         Setting {
             default_channel,
             channels: self.channels,
         }
     }
 
-    fn channels(self, channels: HashMap<String, String>) -> Self {
+    fn set_channels(self, channels: HashMap<String, String>) -> Self {
         Setting {
             default_channel: self.default_channel,
             channels,
@@ -80,6 +110,16 @@ impl Setting {
             default_channel: self.default_channel,
             channels,
         }
+    }
+
+    fn load_setting() -> Result<Self> {
+        let mut f = fs::File::open(&get_config_path())?;
+        let mut s = String::new();
+        f.read_to_string(&mut s)?;
+
+        let setting: Setting = toml::from_str(&s)?;
+
+        Ok(setting)
     }
 }
 
@@ -109,8 +149,8 @@ fn configure_discord_webhook() -> Result<()> {
         channels.insert(channle_name.to_string(), webhook_url);
 
         let setting = Setting::new()
-            .default_channel(channle_name)
-            .channels(channels);
+            .set_default_channel(channle_name)
+            .set_channels(channels);
 
         write!(f, "{}", toml::to_string(&setting)?)?;
         f.flush()?;
