@@ -12,7 +12,8 @@ use std::process::exit;
 
 const CFG_FLAG: &str = "configure";
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let app = build_app();
 
     let matches = app.get_matches();
