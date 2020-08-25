@@ -1,7 +1,18 @@
 # discordcat
 
-## how to use
+## Configuration
 
 ```console
-echo hello world | discordcat
+$ discordcat --configure
+```
+## Usage
+
+```console
+$ echo "hello world" | discordcat
+```
+
+```
+OPTIONS:
+        --username <username>
+        --channel <channel>
 ```
