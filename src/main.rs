@@ -16,6 +16,7 @@ const USERNAME_FLAG: &str = "username";
 const CHANNEL_FLAG: &str = "channel";
 const FILE_FLAG: &str = "file";
 const FILENAME_FLAG: &str = "filename";
+const WEBHOOK_FLAG: &str = "webhook_url";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -37,7 +38,17 @@ async fn main() -> Result<()> {
     } else {
         setting.default_channel()
     };
-    let webhook_url = setting.channels.get(channel).unwrap();
+
+    let webhook_url = if matches.is_present(WEBHOOK_FLAG) {
+        matches.value_of(WEBHOOK_FLAG).unwrap()
+    } else {
+        if let Some(v) = setting.channels.get(channel) {
+            v
+        } else {
+            println!("\x1b[01;31mUnkown channel\x1b[m");
+            exit(1)
+        }
+    };
 
     if matches.is_present(FILE_FLAG) {
         let filename = matches.value_of(FILENAME_FLAG).unwrap();
@@ -73,20 +84,17 @@ fn build_app() -> App<'static, 'static> {
         .arg(
             Arg::with_name(CFG_FLAG)
                 .long("configure")
-                .help("TODO")
                 .takes_value(false),
         )
         .arg(
             Arg::with_name(USERNAME_FLAG)
                 .long("username")
-                .help("TODO")
                 .takes_value(true),
         )
         .arg(
             Arg::with_name(CHANNEL_FLAG)
                 .long("channel")
                 .short("c")
-                .help("TODO")
                 .takes_value(true),
         )
         .arg(
@@ -99,6 +107,11 @@ fn build_app() -> App<'static, 'static> {
             Arg::with_name(FILENAME_FLAG)
                 .long("filename")
                 .default_value("no_name")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(WEBHOOK_FLAG)
+                .long("webhook")
                 .takes_value(true),
         )
 }
@@ -242,7 +255,7 @@ async fn send_file(filepath: &str, filename: String, webhook_url: &str) -> Resul
 async fn send_message(msg: Msg, webhook_url: &str) -> Result<()> {
     let resp = reqwest::Client::new()
         .post(webhook_url)
-        .header("Content-Type", "applicatin/json")
+        .header("Content-Type", "application/json")
         .body(serde_json::to_string(&msg)?)
         .send()
         .await?;
