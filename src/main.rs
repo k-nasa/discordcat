@@ -13,6 +13,7 @@ use std::process::exit;
 const CFG_FLAG: &str = "configure";
 const USERNAME_FLAG: &str = "username";
 const CHANNEL_FLAG: &str = "channel";
+const FILE_FLAG: &str = "file";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -84,6 +85,13 @@ fn build_app() -> App<'static, 'static> {
             Arg::with_name(CHANNEL_FLAG)
                 .long("channel")
                 .short("c")
+                .help("TODO")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(FILE_FLAG)
+                .long("file")
+                .short("f")
                 .help("TODO")
                 .takes_value(true),
         )
