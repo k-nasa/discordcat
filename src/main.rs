@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
+use reqwest::multipart::{Form, Part};
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
@@ -14,6 +15,7 @@ const CFG_FLAG: &str = "configure";
 const USERNAME_FLAG: &str = "username";
 const CHANNEL_FLAG: &str = "channel";
 const FILE_FLAG: &str = "file";
+const FILENAME_FLAG: &str = "filename";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -26,37 +28,38 @@ async fn main() -> Result<()> {
         exit(0)
     }
 
-    let mut pipe_arg = String::new();
-    std::io::stdin().read_to_string(&mut pipe_arg)?;
-
-    if pipe_arg.ends_with("\n") {
-        pipe_arg.remove(pipe_arg.len() - 1);
-    }
-
     let setting: Setting = Setting::load_setting()?;
 
     let username = matches.value_of(USERNAME_FLAG).unwrap_or_default();
-    let msg = Msg {
-        content: pipe_arg,
-        username: username.to_string(),
-    };
 
     let channel = if matches.is_present(CHANNEL_FLAG) {
         matches.value_of(CHANNEL_FLAG).unwrap()
     } else {
         setting.default_channel()
     };
+    let webhook_url = setting.channels.get(channel).unwrap();
 
-    let resp = reqwest::Client::new()
-        .post(setting.channels.get(channel).unwrap())
-        .header("Content-Type", "application/json")
-        .body(serde_json::to_string(&msg)?)
-        .send()
-        .await?;
+    if matches.is_present(FILE_FLAG) {
+        let filename = matches.value_of(FILENAME_FLAG).unwrap();
+        let filepath = matches.value_of(FILE_FLAG).unwrap();
 
-    if resp.status() == 204 {
-        println!("\x1b[01;32mSend message \"{}\"\x1b[m", msg.content);
+        send_file(filepath, filename.to_string(), webhook_url).await?;
+
+        exit(0)
     }
+
+    let mut pipe_arg = String::new();
+    std::io::stdin().read_to_string(&mut pipe_arg)?;
+
+    if pipe_arg.ends_with("\n") {
+        pipe_arg.remove(pipe_arg.len() - 1);
+    }
+    let msg = Msg {
+        content: pipe_arg,
+        username: username.to_string(),
+    };
+
+    send_message(msg, webhook_url).await?;
 
     Ok(())
 }
@@ -90,7 +93,12 @@ fn build_app() -> App<'static, 'static> {
             Arg::with_name(FILE_FLAG)
                 .long("file")
                 .short("f")
-                .help("TODO")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(FILENAME_FLAG)
+                .long("filename")
+                .default_value("no_name")
                 .takes_value(true),
         )
 }
@@ -210,4 +218,40 @@ fn read_line() -> Result<String> {
     io::stdin().read_line(&mut input)?;
 
     Ok(input.trim().to_string())
+}
+
+async fn send_file(filepath: &str, filename: String, webhook_url: &str) -> Result<()> {
+    let file = fs::read(&filepath)?;
+
+    let form = Form::new().part("file", Part::bytes(file).file_name(filename));
+
+    let resp = reqwest::Client::new()
+        .post(webhook_url)
+        .header("Expect", "application/json")
+        .multipart(form)
+        .send()
+        .await?;
+
+    if resp.status() == 200 {
+        println!("\x1b[01;32mSend file\x1b[m",);
+    }
+
+    Ok(())
+}
+
+async fn send_message(msg: Msg, webhook_url: &str) -> Result<()> {
+    let resp = reqwest::Client::new()
+        .post(webhook_url)
+        .header("Content-Type", "applicatin/json")
+        .body(serde_json::to_string(&msg)?)
+        .send()
+        .await?;
+
+    if resp.status() == 204 {
+        println!("\x1b[01;32mSend message \"{}\"\x1b[m", msg.content);
+    } else {
+        println!("\x1b[01;31mFailed send message \"{}\"\x1b[m", msg.content);
+    }
+
+    Ok(())
 }
