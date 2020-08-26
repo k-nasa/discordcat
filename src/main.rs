@@ -71,7 +71,6 @@ fn build_app() -> App<'static, 'static> {
         .arg(
             Arg::with_name(CFG_FLAG)
                 .long("configure")
-                .short("c")
                 .help("TODO")
                 .takes_value(false),
         )
@@ -84,6 +83,7 @@ fn build_app() -> App<'static, 'static> {
         .arg(
             Arg::with_name(CHANNEL_FLAG)
                 .long("channel")
+                .short("c")
                 .help("TODO")
                 .takes_value(true),
         )
