@@ -35,8 +35,6 @@ async fn main() -> Result<()> {
 
     let setting: Setting = Setting::load_setting()?;
 
-    let client = reqwest::Client::new();
-
     let username = matches.value_of(USERNAME_FLAG).unwrap_or_default();
     let msg = Msg {
         content: pipe_arg,
@@ -49,7 +47,7 @@ async fn main() -> Result<()> {
         setting.default_channel()
     };
 
-    let resp = client
+    let resp = reqwest::Client::new()
         .post(setting.channels.get(channel).unwrap())
         .header("Content-Type", "application/json")
         .body(serde_json::to_string(&msg)?)
