@@ -1,4 +1,4 @@
-# discordcat
+# discordcat - CLI utility to post files and command output to discord
 
 ## Configuration
 
