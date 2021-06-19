@@ -1,9 +1,9 @@
 # discordcat - CLI utility to post files and command output to discord
 
-## Configuration
+## Setup
 
 ```console
-$ discordcat --configure
+$ discordcat --setup
 ```
 
 ## Installing
@@ -34,7 +34,7 @@ $ discordcat -f ./README.md
 specify webhook url
 
 ```
-$ echo hoge | ./target/debug/discordcat --webhook https://discordapp.com/api/webhooks/hoge/huga
+$ echo hoge | discordcat --webhook https://discordapp.com/api/webhooks/hoge/huga
 ```
 
 ```

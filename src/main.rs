@@ -81,11 +81,7 @@ fn build_app() -> App<'static, 'static> {
         .about(crate_description!())
         .setting(AppSettings::DeriveDisplayOrder)
         .setting(AppSettings::ColoredHelp)
-        .arg(
-            Arg::with_name(CFG_FLAG)
-                .long("configure")
-                .takes_value(false),
-        )
+        .arg(Arg::with_name(CFG_FLAG).long("setup").takes_value(false))
         .arg(
             Arg::with_name(USERNAME_FLAG)
                 .long("username")
