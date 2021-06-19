@@ -32,7 +32,7 @@ sudo chmod +x /usr/local/bin/discordcat
 
 ## Setup
 
-```sh
+```bash
 $ discordcat --setup
 ```
 
@@ -40,13 +40,13 @@ $ discordcat --setup
 
 ### send message
 
-```sh
+```bash
 $ echo "hello discord!!" | discordcat
 ```
 
 ### send file
 
-```sh
+```bash
 $ discordcat -f ./README.md
 $ discordcat -f README.md --filename readme
 ```
@@ -54,11 +54,11 @@ $ discordcat -f README.md --filename readme
 
 ### specify webhook url
 
-```sh
+```bash
 $ echo hello | discordcat --webhook https://discordapp.com/api/webhooks/hoge/huga
 ```
 
-```sh
+```bash
 discordcat 0.2.0
 CLI utility to post files and command output to discord
 
