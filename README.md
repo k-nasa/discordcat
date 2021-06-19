@@ -18,7 +18,7 @@ cargo install discordcat
 ### using brew
 
 ```
-
+brew install k-nasa/tap/discordcat
 ```
 
 ### using wget
