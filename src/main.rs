@@ -173,7 +173,7 @@ impl Setting {
 fn get_config_path() -> String {
     let home = if let Ok(home) = std::env::var("HOME") {
         home
-    } else if let Ok(home) = std::env::var("HOMEDRIVE") {
+    } else if let Ok(home) = std::env::var("HOMEPATH") {
         home
     } else {
         "~".to_string()
