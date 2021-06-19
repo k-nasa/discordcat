@@ -1,5 +1,11 @@
 # discordcat - CLI utility to post files and command output to discord
 
+## Overview
+
+[![Actions Status](https://github.com/k-nasa/discordcat/workflows/CI/badge.svg)](https://github.com/k-nasa/discordcat/actions)
+[![crate-name at crates.io](https://img.shields.io/crates/v/discordcat.svg)](https://crates.io/crates/discordcat)
+
+CLI utility to post files and command output to discord
 
 ## DEMO
 
