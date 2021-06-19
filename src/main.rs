@@ -171,7 +171,12 @@ impl Setting {
 }
 
 fn get_config_path() -> String {
-    let home = env!("HOME");
+    let home = if cfg!(windows) {
+        std::env::var("HOMEDRIVE").unwrap()
+    } else {
+        env!("HOME").to_string()
+    };
+
     format!("{}/.discordcat", home)
 }
 
