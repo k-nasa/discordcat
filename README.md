@@ -24,7 +24,7 @@ cargo install discordcat
 ### using wget
 
 ```
-wget https://github.com/k-nasa/discordcat/releases/download/0.1.0/discordcat_x86_64-unknown-linux-gnu.tar.gz
+wget https://github.com/k-nasa/discordcat/releases/download/0.2.0/discordcat_x86_64-unknown-linux-gnu.tar.gz
 tar -xf discordcat_x86_64-unknown-linux-gnu.tar.gz
 sudo mv ./discordcat_x86_64-unknown-linux-gnu/discordcat /usr/local/bin/
 sudo chmod +x /usr/local/bin/discordcat
@@ -32,7 +32,7 @@ sudo chmod +x /usr/local/bin/discordcat
 
 ## Setup
 
-```console
+```sh
 $ discordcat --setup
 ```
 
@@ -40,13 +40,13 @@ $ discordcat --setup
 
 ### send message
 
-```console
+```sh
 $ echo "hello discord!!" | discordcat
 ```
 
 ### send file
 
-```
+```sh
 $ discordcat -f ./README.md
 $ discordcat -f README.md --filename readme
 ```
@@ -54,11 +54,11 @@ $ discordcat -f README.md --filename readme
 
 ### specify webhook url
 
-```
+```sh
 $ echo hello | discordcat --webhook https://discordapp.com/api/webhooks/hoge/huga
 ```
 
-```
+```sh
 discordcat 0.2.0
 CLI utility to post files and command output to discord
 
