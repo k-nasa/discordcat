@@ -43,7 +43,7 @@ $ discordcat --setup
 ### send message
 
 ```bash
-$ echo "hello discord!!" | discordcat
+$ echo "hello discord" | discordcat
 ```
 
 ### send file
