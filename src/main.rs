@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
     };
 
     if matches.is_present(FILE_FLAG) {
-        let filename = matches.value_of(FILENAME_FLAG).unwrap();
+        let filename = matches.value_of(FILENAME_FLAG).unwrap_or_default();
         let filepath = matches.value_of(FILE_FLAG).unwrap();
 
         send_file(filepath, filename.to_string(), webhook_url).await?;
@@ -81,11 +81,7 @@ fn build_app() -> App<'static, 'static> {
         .about(crate_description!())
         .setting(AppSettings::DeriveDisplayOrder)
         .setting(AppSettings::ColoredHelp)
-        .arg(
-            Arg::with_name(CFG_FLAG)
-                .long("configure")
-                .takes_value(false),
-        )
+        .arg(Arg::with_name(CFG_FLAG).long("setup").takes_value(false))
         .arg(
             Arg::with_name(USERNAME_FLAG)
                 .long("username")
@@ -106,7 +102,6 @@ fn build_app() -> App<'static, 'static> {
         .arg(
             Arg::with_name(FILENAME_FLAG)
                 .long("filename")
-                .default_value("no_name")
                 .takes_value(true),
         )
         .arg(
@@ -176,7 +171,14 @@ impl Setting {
 }
 
 fn get_config_path() -> String {
-    let home = env!("HOME");
+    let home = if let Ok(home) = std::env::var("HOME") {
+        home
+    } else if let Ok(home) = std::env::var("HOMEDRIVE") {
+        home
+    } else {
+        "~".to_string()
+    };
+
     format!("{}/.discordcat", home)
 }
 
@@ -235,6 +237,12 @@ fn read_line() -> Result<String> {
 
 async fn send_file(filepath: &str, filename: String, webhook_url: &str) -> Result<()> {
     let file = fs::read(&filepath)?;
+
+    let filename = if filename.is_empty() {
+        filepath.to_string()
+    } else {
+        filename
+    };
 
     let form = Form::new().part("file", Part::bytes(file).file_name(filename));
 
